@@ -1,4 +1,4 @@
-// zyraft.keymap — MINIMAL VERSION for keymap-editor parsing test
+// zyraft.keymap -- MINIMAL VERSION for keymap-editor parsing test
 //
 // This version strips out non-standard third-party module dependencies that
 // the keymap-editor may not understand. Once we get a clean parse, we can
@@ -34,7 +34,7 @@
   };
 
   /* ==========================================================================
-   * BEHAVIORS — only standard ZMK behaviors used here
+   * BEHAVIORS -- only standard ZMK behaviors used here
    * ========================================================================== */
 
   behaviors {
@@ -119,7 +119,7 @@
     /* Nav arrow hold-taps (masked Ctrl). */
     mt_home: mt_home {
       compatible = "zmk,behavior-hold-tap";
-      label = "← / masked Home";
+      label = "<- / masked Home";
       #binding-cells = <2>;
       bindings = <&masked_home>, <&kp>;
       flavor = "tap-preferred";
@@ -130,7 +130,7 @@
 
     mt_end: mt_end {
       compatible = "zmk,behavior-hold-tap";
-      label = "→ / masked End";
+      label = "-> / masked End";
       #binding-cells = <2>;
       bindings = <&masked_end>, <&kp>;
       flavor = "tap-preferred";
@@ -157,7 +157,7 @@
 
     mt_up: mt_up {
       compatible = "zmk,behavior-hold-tap";
-      label = "↑ / masked Ctrl+Home";
+      label = "^ / masked Ctrl+Home";
       #binding-cells = <2>;
       bindings = <&kp LC(HOME)>, <&kp UP>;
       flavor = "tap-preferred";
@@ -168,7 +168,7 @@
 
     mt_down: mt_down {
       compatible = "zmk,behavior-hold-tap";
-      label = "↓ / masked Ctrl+End";
+      label = "v / masked Ctrl+End";
       #binding-cells = <2>;
       bindings = <&kp LC(END)>, <&kp DOWN>;
       flavor = "tap-preferred";
@@ -242,7 +242,7 @@
   };
 
   /* ==========================================================================
-   * COMBOS — keep simple, no layer restrictions
+   * COMBOS -- keep simple, no layer restrictions
    * ========================================================================== */
   combos {
     compatible = "zmk,combos";
