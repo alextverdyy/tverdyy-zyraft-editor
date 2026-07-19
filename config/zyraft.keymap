@@ -111,11 +111,11 @@
     };
 
     /* smart_shift: tap → sticky shift (chord operator), hold → held shift.
-       Layer uses &smart_shift with 0 cells (defaults apply). */
+       #binding-cells = <0>: use the default bindings declared inline. */
     smart_shift: smart_shift {
       compatible = "zmk,behavior-hold-tap";
       label = "Smart Shift (sticky on tap, held on hold)";
-      #binding-cells = <2>;
+      #binding-cells = <0>;
       bindings = <&kp LSHFT>, <&sk LSHFT>;
       flavor = "balanced";
       tapping-term-ms = <200>;
@@ -150,11 +150,11 @@
     };
 
     /* lt_spc: tap = space, double-tap = esc, hold = NAV layer.
-       Use with 0 cells; defaults apply. */
+       #binding-cells = <0>: use defaults. */
     lt_spc: lt_spc {
       compatible = "zmk,behavior-hold-tap";
       label = "Space / Esc / NAV";
-      #binding-cells = <2>;
+      #binding-cells = <0>;
       bindings = <&mo NAV>, <&spc_dance>;
       flavor = "balanced";
       tapping-term-ms = <200>;
