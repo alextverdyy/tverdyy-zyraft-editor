@@ -1,0 +1,845 @@
+// zyraft.keymap — keymap-editor compatible
+//
+// Generated from the prototype preview. All decisions baked in:
+//   - LH1 = smart_shift (tap=sticky, hold=held)
+//   - RH0 = rh0_smart (mod-morph: RET | TAB with sticky-shift)
+//   - RH1 = rh1_smart (mod-morph: BSPC | ESC with sticky-shift)
+//   - tmux_prefix on NAV.RB4 (smart-toggle)
+//   - num_sticky combo (LH0+RH0 → sticky NUM layer)
+//   - sys_layer combo (LH1+LH0+RH0 held → SYS layer)
+//   - FN merged into SYM (F-keys at SYM bottom row)
+//
+// Requires these ZMK modules (in west.yml):
+//   - zmk-auto-layer        (num_word behavior)
+//   - zmk-unicode           (unicode for leader sequences — optional)
+//   - zmk-helpers           (helper.h for masks, labels)
+//   - zmk-smart-toggle      (caksoylar/zmk-smart-toggle, for tmux_prefix)
+//
+// dt-formatter: indent = "  "
+// dt-formatter: multilineIntegerCellsIndent = "reindent"
+// dt-formatter: multilineListCommaStyle = "leading"
+
+#include <behaviors.dtsi>
+#include <behaviors/num_word.dtsi>
+#include <behaviors/unicode.dtsi>
+#include <behaviors/oskey.dtsi>
+#include <zmk-helpers/helper.h>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/outputs.h>
+#include <dt-bindings/zmk/dynamic-macros.h>
+#include <dt-bindings/zmk/oskey.h>
+
+/ {
+  /* ==========================================================================
+   * GLOBAL DEFAULTS
+   * ========================================================================== */
+
+  &sk {
+    release-after-ms = <900>;
+    quick-release;
+  };
+
+  &sl {
+    ignore-modifiers;
+  };
+
+  &caps_word {
+    /delete-property/ ignore-modifiers;
+  };
+
+  /* Mouse settings (from mouse.dtsi) — warp on NAV, precision on MOUSE */
+  &mmv {
+    acceleration-exponent = <1>;
+    time-to-max-speed-ms = <500>;
+    delay-ms = <0>;
+  };
+
+  &msc {
+    acceleration-exponent = <0>;
+    time-to-max-speed-ms = <300>;
+    delay-ms = <0>;
+  };
+
+  &lt {
+    flavor = "balanced";
+    tapping-term-ms = <200>;
+    quick-tap-ms = <175>;
+  };
+
+  /* ==========================================================================
+   * POSITION DEFINITIONS (for combos & behaviors)
+   *
+   * Order matches the binding order in each layer:
+   *   row 1 L: 0-4, row 1 R: 5-9
+   *   row 2 L: 10-14, row 2 R: 15-19
+   *   row 3 L: 20-24, row 3 R: 25-29
+   *   thumbs:   30-33 (LH1, LH0, RH0, RH1)
+   * ========================================================================== */
+
+  #define POS_LT4  0
+  #define POS_LT3  1
+  #define POS_LT2  2
+  #define POS_LT1  3
+  #define POS_LT0  4
+  #define POS_RT0  5
+  #define POS_RT1  6
+  #define POS_RT2  7
+  #define POS_RT3  8
+  #define POS_RT4  9
+  #define POS_LM4 10
+  #define POS_LM3 11
+  #define POS_LM2 12
+  #define POS_LM1 13
+  #define POS_LM0 14
+  #define POS_RM0 15
+  #define POS_RM1 16
+  #define POS_RM2 17
+  #define POS_RM3 18
+  #define POS_RM4 19
+  #define POS_LB4 20
+  #define POS_LB3 21
+  #define POS_LB2 22
+  #define POS_LB1 23
+  #define POS_LB0 24
+  #define POS_RB0 25
+  #define POS_RB1 26
+  #define POS_RB2 27
+  #define POS_RB3 28
+  #define POS_RB4 29
+  #define POS_LH1 30
+  #define POS_LH0 31
+  #define POS_RH0 32
+  #define POS_RH1 33
+
+  /* Position lists for combo triggers and hold-tap */
+  #define KEYS_LT  <POS_LT4 POS_LT3 POS_LT2 POS_LT1 POS_LT0>
+  #define KEYS_RT  <POS_RT0 POS_RT1 POS_RT2 POS_RT3 POS_RT4>
+  #define KEYS_LM  <POS_LM4 POS_LM3 POS_LM2 POS_LM1 POS_LM0>
+  #define KEYS_RM  <POS_RM0 POS_RM1 POS_RM2 POS_RM3 POS_RM4>
+  #define KEYS_LB  <POS_LB4 POS_LB3 POS_LB2 POS_LB1 POS_LB0>
+  #define KEYS_RB  <POS_RB0 POS_RB1 POS_RB2 POS_RB3 POS_RB4>
+  #define THUMBS   <POS_LH1 POS_LH0 POS_RH0 POS_RH1>
+
+  /* ==========================================================================
+   * BEHAVIORS
+   * ========================================================================== */
+
+  behaviors {
+    compatible = "zmk,behaviors";
+
+    /* Homerow mods (left + right), gated to thumbs to mitigate false-holds
+       on a 34-key board without an outer pinky column. */
+    hml: home_row_mods_left {
+      compatible = "zmk,behavior-hold-tap";
+      label = "HRM Left";
+      #binding-cells = <2>;
+      bindings = <&kp>, <&kp>;
+      flavor = "balanced";
+      tapping-term-ms = <280>;
+      quick-tap-ms = <175>;
+      require-prior-idle-ms = <150>;
+      hold-trigger-on-release;
+      hold-trigger-key-positions = <KEYS_RT KEYS_RM KEYS_RB THUMBS>;
+    };
+
+    hmr: home_row_mods_right {
+      compatible = "zmk,behavior-hold-tap";
+      label = "HRM Right";
+      #binding-cells = <2>;
+      bindings = <&kp>, <&kp>;
+      flavor = "balanced";
+      tapping-term-ms = <280>;
+      quick-tap-ms = <175>;
+      require-prior-idle-ms = <150>;
+      hold-trigger-on-release;
+      hold-trigger-key-positions = <KEYS_LT KEYS_LM KEYS_LB THUMBS>;
+    };
+
+    /* smart_shift: tap → sticky shift (chord operator for Tab/Esc),
+       hold + any thumb → held shift. Replaces magic_shift. */
+    smart_shift: smart_shift {
+      compatible = "zmk,behavior-hold-tap";
+      label = "Smart Shift (sticky on tap, held on hold)";
+      #binding-cells = <2>;
+      bindings = <&kp LSHFT>, <&sk LSHFT>;
+      flavor = "balanced";
+      tapping-term-ms = <200>;
+      quick-tap-ms = <175>;
+      hold-trigger-key-positions = <KEYS_RT KEYS_RM KEYS_RB THUMBS>;
+    };
+
+    /* mod-morph on RH0: tap = RET, with shift = TAB (consumed by sticky). */
+    rh0_smart: rh0_smart {
+      compatible = "zmk,behavior-mod-morph";
+      label = "RET | TAB (chord)";
+      #binding-cells = <0>;
+      bindings = <&kp RET>, <&kp TAB>;
+      mods = <(MOD_LSFT|MOD_RSFT)>;
+    };
+
+    /* mod-morph on RH1: tap = BSPC, with shift = ESC. */
+    rh1_smart: rh1_smart {
+      compatible = "zmk,behavior-mod-morph";
+      label = "BSPC | ESC (chord)";
+      #binding-cells = <0>;
+      bindings = <&kp BSPC>, <&kp ESC>;
+      mods = <(MOD_LSFT|MOD_RSFT)>;
+    };
+
+    /* tmux_prefix: smart-toggle. tap = Ctrl+S modifier, next key = tmux
+       command, auto-release. Requires zmk-smart-toggle module. */
+    tmux_prefix: tmux_prefix {
+      compatible = "zmk,behavior-smart-toggle";
+      label = "tmux prefix (Ctrl+S)";
+      #binding-cells = <0>;
+      bindings = <&kp LC(S)>, <&kp LC(S)>;
+    };
+
+    /* lt_spc: tap = space, double-tap = esc, hold = NAV layer. */
+    lt_spc: lt_spc {
+      compatible = "zmk,behavior-hold-tap";
+      label = "Space / Esc / NAV";
+      #binding-cells = <2>;
+      bindings = <&mo NAV>, <&spc_dance>;
+      flavor = "balanced";
+      tapping-term-ms = <200>;
+      quick-tap-ms = <175>;
+    };
+
+    spc_dance: spc_dance {
+      compatible = "zmk,behavior-tap-dance";
+      label = "Space / Esc";
+      #binding-cells = <0>;
+      bindings = <&kp SPACE>, <&kp ESC>;
+      tapping-term-ms = <200>;
+    };
+
+    /* smart_num: hold = NUM layer, tap = num_dance (single=num_word,
+       double=sticky NUM). */
+    smart_num: smart_num {
+      compatible = "zmk,behavior-hold-tap";
+      label = "Smart Num (hold=NUM, tap=num_dance)";
+      #binding-cells = <2>;
+      bindings = <&mo NUM>, <&num_dance>;
+      flavor = "balanced";
+      tapping-term-ms = <200>;
+      quick-tap-ms = <175>;
+    };
+
+    num_dance: num_dance {
+      compatible = "zmk,behavior-tap-dance";
+      label = "Num Dance";
+      #binding-cells = <0>;
+      bindings = <&num_word NUM>, <&sl NUM>;
+      tapping-term-ms = <200>;
+    };
+
+    /* smart_mouse: tri-state toggle. Auto-deactivates on other-key press
+       (except in ignored layers/positions). */
+    smart_mouse: smart_mouse {
+      compatible = "zmk,behavior-tri-state";
+      label = "Smart Mouse Toggle";
+      #binding-cells = <0>;
+      bindings = <&tog MOUSE>, <&none>, <&tog MOUSE>;
+      ignored-key-positions = <POS_LT1 POS_LT2 POS_RM0 POS_RM1 POS_RM2 POS_RM3 POS_RM4 POS_RB1 POS_RB2 POS_RB3 POS_RH0 POS_RH1>;
+      ignored-layers = <MOUSE NAV FN>;
+    };
+
+    /* mod-morphs on bottom-right (`,` `.` `?` `!`). */
+    comma_morph: comma_morph {
+      compatible = "zmk,behavior-mod-morph";
+      label = "Comma Morph";
+      #binding-cells = <0>;
+      bindings = <&kp COMMA>, <&comma_inner_morph>;
+      mods = <(MOD_LSFT|MOD_RSFT)>;
+    };
+
+    comma_inner_morph: comma_inner_morph {
+      compatible = "zmk,behavior-mod-morph";
+      label = "Comma Inner Morph";
+      #binding-cells = <0>;
+      bindings = <&kp SEMICOLON>, <&kp LESS_THAN>;
+      mods = <(MOD_LCTL)>;
+    };
+
+    dot_morph: dot_morph {
+      compatible = "zmk,behavior-mod-morph";
+      label = "Dot Morph";
+      #binding-cells = <0>;
+      bindings = <&kp DOT>, <&dot_inner_morph>;
+      mods = <(MOD_LSFT|MOD_RSFT)>;
+    };
+
+    dot_inner_morph: dot_inner_morph {
+      compatible = "zmk,behavior-mod-morph";
+      label = "Dot Inner Morph";
+      #binding-cells = <0>;
+      bindings = <&kp COLON>, <&kp GREATER_THAN>;
+      mods = <(MOD_LCTL)>;
+    };
+
+    qexcl: qexcl {
+      compatible = "zmk,behavior-mod-morph";
+      label = "? / !";
+      #binding-cells = <0>;
+      bindings = <&kp QMARK>, <&kp EXCL>;
+      mods = <(MOD_LSFT|MOD_RSFT)>;
+    };
+
+    /* OS-aware app-switch swapper (uses tri-state from oskey module).
+       First tap emits LAlt (or LGUI on Mac) and Tab, second tap emits
+       Tab, exit on other key. */
+    swapper: swapper {
+      compatible = "zmk,behavior-tri-state";
+      label = "OS-aware App Switcher";
+      #binding-cells = <0>;
+      bindings = <&kt LALT>, <&kp TAB>, <&kt LALT>;
+      ignored-key-positions = <POS_LT2 POS_RT2 POS_RM1 POS_RM2 POS_RM3>;
+    };
+
+    /* Nav arrows: hold-tap with masked Ctrl so accidental hold doesn't
+       jump to start/end of line. */
+    mt_home: mt_home {
+      compatible = "zmk,behavior-hold-tap";
+      label = "← / masked Home";
+      #binding-cells = <2>;
+      bindings = <&masked_home>, <&kp>;
+      flavor = "tap-preferred";
+      tapping-term-ms = <220>;
+      quick-tap-ms = <220>;
+      hold-trigger-key-positions = <0>;
+    };
+
+    mt_end: mt_end {
+      compatible = "zmk,behavior-hold-tap";
+      label = "→ / masked End";
+      #binding-cells = <2>;
+      bindings = <&masked_end>, <&kp>;
+      flavor = "tap-preferred";
+      tapping-term-ms = <220>;
+      quick-tap-ms = <220>;
+      hold-trigger-key-positions = <0>;
+    };
+
+    /* Masked mod-morphs: emit Home/End but suppress Ctrl on the rest of
+       the chord. */
+    masked_home: masked_home {
+      compatible = "zmk,behavior-mod-morph";
+      label = "Masked Home";
+      #binding-cells = <0>;
+      bindings = <&kp HOME>, <&kp HOME>;
+      mods = <(MOD_LCTL)>;
+    };
+
+    masked_end: masked_end {
+      compatible = "zmk,behavior-mod-morph";
+      label = "Masked End";
+      #binding-cells = <0>;
+      bindings = <&kp END>, <&kp END>;
+      mods = <(MOD_LCTL)>;
+    };
+
+    /* Up/Down with masked Ctrl: tap = arrow, hold = masked home/end of doc. */
+    mt_up: mt_up {
+      compatible = "zmk,behavior-hold-tap";
+      label = "↑ / masked Ctrl+Home";
+      #binding-cells = <2>;
+      bindings = <&kp LC(HOME)>, <&kp UP>;
+      flavor = "tap-preferred";
+      tapping-term-ms = <220>;
+      quick-tap-ms = <220>;
+      hold-trigger-key-positions = <0>;
+    };
+
+    mt_down: mt_down {
+      compatible = "zmk,behavior-hold-tap";
+      label = "↓ / masked Ctrl+End";
+      #binding-cells = <2>;
+      bindings = <&kp LC(END)>, <&kp DOWN>;
+      flavor = "tap-preferred";
+      tapping-term-ms = <220>;
+      quick-tap-ms = <220>;
+      hold-trigger-key-positions = <0>;
+    };
+
+    /* Word-bspc and word-del: hold = LC(BSPC) / LC(DEL). */
+    mt_bspc: mt_bspc {
+      compatible = "zmk,behavior-hold-tap";
+      label = "BSPC / word-bspc";
+      #binding-cells = <2>;
+      bindings = <&kp LC(BSPC)>, <&kp BSPC>;
+      flavor = "tap-preferred";
+      tapping-term-ms = <220>;
+      quick-tap-ms = <220>;
+      hold-trigger-key-positions = <0>;
+    };
+
+    mt_del: mt_del {
+      compatible = "zmk,behavior-hold-tap";
+      label = "DEL / word-del";
+      #binding-cells = <2>;
+      bindings = <&kp LC(DEL)>, <&kp DEL>;
+      flavor = "tap-preferred";
+      tapping-term-ms = <220>;
+      quick-tap-ms = <220>;
+      hold-trigger-key-positions = <0>;
+    };
+
+    /* copy_cut: tap = copy (LC(INS)), double-tap = cut (LC(X)). */
+    copy_cut: copy_cut {
+      compatible = "zmk,behavior-tap-dance";
+      label = "Copy / Cut";
+      #binding-cells = <0>;
+      bindings = <&kp LC(INS)>, <&kp LC(X)>;
+      tapping-term-ms = <200>;
+    };
+
+    /* bs_del: BSPC / DEL mod-morph on shift. */
+    bs_del: bs_del {
+      compatible = "zmk,behavior-mod-morph";
+      label = "BSPC / DEL";
+      #binding-cells = <0>;
+      bindings = <&kp BSPC>, <&kp DEL>;
+      mods = <(MOD_LSFT|MOD_RSFT)>;
+      keep-mods = <MOD_RSFT>;
+    };
+
+    /* lpar_lt / rpar_gt: paren mod-morphs. */
+    lpar_lt: lpar_lt {
+      compatible = "zmk,behavior-mod-morph";
+      label = "( / <";
+      #binding-cells = <0>;
+      bindings = <&kp LPAR>, <&kp LT>;
+      mods = <(MOD_LSFT|MOD_RSFT)>;
+    };
+
+    rpar_gt: rpar_gt {
+      compatible = "zmk,behavior-mod-morph";
+      label = ") / >";
+      #binding-cells = <0>;
+      bindings = <&kp RPAR>, <&kp GT>;
+      mods = <(MOD_LSFT|MOD_RSFT)>;
+    };
+
+    /* magic_sym: sticky-or-hold for SYM layer access via right-hand combo. */
+    magic_sym: magic_sym {
+      compatible = "zmk,behavior-hold-tap";
+      label = "Magic Sym (hold=SYM, tap=sticky SYM)";
+      #binding-cells = <2>;
+      bindings = <&mo SYM>, <&sl SYM>;
+      flavor = "balanced";
+      tapping-term-ms = <200>;
+      quick-tap-ms = <175>;
+    };
+
+    /* leader: leader-key behavior (single-press, then sequence).
+       Sequences defined below in /{...}/leader-sequences. */
+    leader: leader {
+      compatible = "zmk,behavior-leader-key";
+      #binding-cells = <0>;
+      ignore-keys = <LSHFT RSHFT>;
+    };
+  };
+
+  /* ==========================================================================
+   * MOUSE INPUT PROCESSORS (warp on NAV, precision on MOUSE/FN)
+   * From mouse.dtsi — inlined for keymap-editor compatibility.
+   * ========================================================================== */
+  zip_scroll_scaler: zip_scroll_scaler {
+    compatible = "zmk,input-processor-scaler";
+    #input-processor-cells = <2>;
+    type = <INPUT_EV_REL>;
+    codes = <INPUT_REL_WHEEL INPUT_REL_HWHEEL>;
+    track-remainders;
+  };
+
+  &mmv_input_listener {
+    warp {
+      layers = <NAV>;
+      input-processors = <&zip_xy_scaler 3 1>;
+    };
+    precision {
+      layers = <FN>;
+      input-processors = <&zip_xy_scaler 1 2>;
+    };
+  };
+
+  &msc_input_listener {
+    warp {
+      layers = <NAV>;
+      input-processors = <&zip_scroll_scaler 2 1>;
+    };
+    precision {
+      layers = <FN>;
+      input-processors = <&zip_scroll_scaler 1 2>;
+    };
+  };
+
+  /* ==========================================================================
+   * LEADER SEQUENCES (from leader.dtsi — inlined)
+   * German umlauts + Greek alphabet + system actions
+   * ========================================================================== */
+  macros {
+    compatible = "zmk,behavior-macro";
+
+    /* German umlauts */
+    de_ae: de_ae {
+      compatible = "zmk,behavior-macro";
+      label = "ä";
+      #binding-cells = <0>;
+      bindings = <&kp UC_DE_AE>;
+    };
+    de_oe: de_oe {
+      compatible = "zmk,behavior-macro";
+      label = "ö";
+      #binding-cells = <0>;
+      bindings = <&kp UC_DE_OE>;
+    };
+    de_ue: de_ue {
+      compatible = "zmk,behavior-macro";
+      label = "ü";
+      #binding-cells = <0>;
+      bindings = <&kp UC_DE_UE>;
+    };
+    de_eszett: de_eszett {
+      compatible = "zmk,behavior-macro";
+      label = "ß";
+      #binding-cells = <0>;
+      bindings = <&kp UC_DE_SS>;
+    };
+
+    /* Greek (selected — add more as needed) */
+    el_alpha: el_alpha {
+      compatible = "zmk,behavior-macro";
+      label = "α";
+      #binding-cells = <0>;
+      bindings = <&kp UC_EL_ALPHA>;
+    };
+    el_beta: el_beta {
+      compatible = "zmk,behavior-macro";
+      label = "β";
+      #binding-cells = <0>;
+      bindings = <&kp UC_EL_BETA>;
+    };
+    el_gamma: el_gamma {
+      compatible = "zmk,behavior-macro";
+      label = "γ";
+      #binding-cells = <0>;
+      bindings = <&kp UC_EL_GAMMA>;
+    };
+    el_delta: el_delta {
+      compatible = "zmk,behavior-macro";
+      label = "δ";
+      #binding-cells = <0>;
+      bindings = <&kp UC_EL_DELTA>;
+    };
+    el_pi: el_pi {
+      compatible = "zmk,behavior-macro";
+      label = "π";
+      #binding-cells = <0>;
+      bindings = <&kp UC_EL_PI>;
+    };
+    el_omega: el_omega {
+      compatible = "zmk,behavior-macro";
+      label = "ω";
+      #binding-cells = <0>;
+      bindings = <&kp UC_EL_OMEGA>;
+    };
+
+    /* System */
+    reset_macro: reset_macro {
+      compatible = "zmk,behavior-macro";
+      label = "Reset";
+      #binding-cells = <0>;
+      bindings = <&sys_reset>;
+    };
+    bootloader_macro: bootloader_macro {
+      compatible = "zmk,behavior-macro";
+      label = "Bootloader";
+      #binding-cells = <0>;
+      bindings = <&bootloader>;
+    };
+
+    /* leader_sft: sticky shift + leader, for shift+leader sequences. */
+    leader_sft: leader_sft {
+      compatible = "zmk,behavior-macro";
+      label = "Leader + Shift";
+      #binding-cells = <0>;
+      bindings = <&sk LSHFT>, <&leader>;
+    };
+
+    /* Mouse click + drag pattern (Ploopy Adept style). */
+    mouse_click: mouse_click {
+      compatible = "zmk,behavior-macro";
+      label = "Left Click";
+      #binding-cells = <0>;
+      bindings = <&mkp LCLK>;
+    };
+  };
+
+  /* ==========================================================================
+   * COMBOS
+   * ========================================================================== */
+
+  combos {
+    compatible = "zmk,combos";
+
+    /* Cross-thumb: NUM sticky layer access (replaces old esc_thumb combo). */
+    num_sticky {
+      timeout-ms = <50>;
+      key-positions = <POS_LH0 POS_RH0>;
+      bindings = <&sl NUM>;
+    };
+
+    /* 3-thumb: SYS layer access (rare, hard to fire accidentally). */
+    sys_layer {
+      timeout-ms = <50>;
+      key-positions = <POS_LH1 POS_LH0 POS_RH0>;
+      bindings = <&mo SYS>;
+    };
+
+    /* Esc via top-row fingers (kept as alt path, in case chord is slow). */
+    esc_fingers {
+      timeout-ms = <50>;
+      key-positions = <POS_LT3 POS_LT2>;
+      bindings = <&kp ESC>;
+      layers = <DEF NAV>;
+    };
+
+    /* Plain Tab on home-row combo (alternative to sticky-shift chord). */
+    tab_home {
+      timeout-ms = <50>;
+      key-positions = <POS_LM3 POS_LM2>;
+      bindings = <&kp TAB>;
+      layers = <DEF>;
+    };
+
+    /* Alt+Shift+Tab (window cycling backward) — kept from original. */
+    alt_shift_tab {
+      timeout-ms = <50>;
+      key-positions = <POS_LM3 POS_LM2>;
+      bindings = <&hml LS(LALT) TAB>;
+      layers = <NAV NUM>;
+    };
+
+    /* Leader key. */
+    leader_combo {
+      timeout-ms = <50>;
+      key-positions = <POS_LM2 POS_LM1>;
+      bindings = <&leader>;
+      layers = <DEF NAV NUM>;
+    };
+
+    /* Leader + shift. */
+    leader_sft_combo {
+      timeout-ms = <50>;
+      key-positions = <POS_LM3 POS_LM2 POS_LM1>;
+      bindings = <&leader_sft>;
+      layers = <DEF NAV NUM>;
+    };
+
+    /* OS-aware clipboard (simple LC-based; replace with OS-aware in main repo). */
+    cut_combo {
+      timeout-ms = <50>;
+      key-positions = <POS_LB3 POS_LB1>;
+      bindings = <&ok_cut>;
+      layers = <DEF NAV NUM>;
+    };
+    copy_combo {
+      timeout-ms = <50>;
+      key-positions = <POS_LB3 POS_LB2>;
+      bindings = <&ok_copy>;
+      layers = <DEF NAV NUM>;
+    };
+    paste_combo {
+      timeout-ms = <50>;
+      key-positions = <POS_LB2 POS_LB1>;
+      bindings = <&ok_paste>;
+      layers = <DEF NAV NUM>;
+    };
+
+    /* num_word: tap both bottom-right keys → num_word (one-shot num layer). */
+    num_word_combo {
+      timeout-ms = <50>;
+      key-positions = <POS_RB3 POS_RB4>;
+      bindings = <&num_word NUM>;
+    };
+
+    /* SYM layer entry via right-hand finger combo. */
+    sym_combo {
+      timeout-ms = <50>;
+      key-positions = <POS_RT3 POS_RT4>;
+      bindings = <&magic_sym SYM SYM>;
+      layers = <DEF>;
+    };
+
+    /* Vertical symbol combos (kept from original zyraft). */
+    at_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_LT3 POS_LM3>;
+      bindings = <&kp AT>;
+    };
+    hash_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_LT2 POS_LM2>;
+      bindings = <&kp HASH>;
+    };
+    dllr_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_LT1 POS_LM1>;
+      bindings = <&kp DLLR>;
+    };
+    prcnt_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_LT0 POS_LM0>;
+      bindings = <&kp PRCNT>;
+    };
+    grave_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_LM3 POS_LB3>;
+      bindings = <&kp GRAVE>;
+    };
+    bslh_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_LM2 POS_LB2>;
+      bindings = <&kp BSLH>;
+    };
+    equal_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_LM1 POS_LB1>;
+      bindings = <&kp EQUAL>;
+    };
+    tilde_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_LM0 POS_LB0>;
+      bindings = <&kp TILDE>;
+    };
+    caret_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_RT0 POS_RM0>;
+      bindings = <&kp CARET>;
+    };
+    plus_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_RT1 POS_RM1>;
+      bindings = <&kp PLUS>;
+    };
+    star_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_RT2 POS_RM2>;
+      bindings = <&kp STAR>;
+    };
+    amps_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_RT3 POS_RM3>;
+      bindings = <&kp AMPS>;
+    };
+    under_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_RM0 POS_RB0>;
+      bindings = <&kp UNDER>;
+    };
+    minus_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_RM1 POS_RB1>;
+      bindings = <&kp MINUS>;
+    };
+    fslh_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_RM2 POS_RB2>;
+      bindings = <&kp FSLH>;
+    };
+    pipe_combo {
+      timeout-ms = <30>;
+      key-positions = <POS_RM3 POS_RB3>;
+      bindings = <&kp PIPE>;
+    };
+  };
+
+  /* ==========================================================================
+   * KEYMAP
+   *
+   * Each layer has 34 bindings:
+   *   row 1 L (5) + row 1 R (5) = 10
+   *   row 2 L (5) + row 2 R (5) = 10
+   *   row 3 L (5) + row 3 R (5) = 10
+   *   thumbs L (2) + thumbs R (2) = 4
+   * ========================================================================== */
+
+  keymap {
+    compatible = "zmk,keymap";
+
+    /* ---------------------------------------------------------------------- */
+    /* BASE LAYER                                                            */
+    /* ---------------------------------------------------------------------- */
+    base {
+      bindings = <
+        &kp Q       &kp W       &kp E       &kp R       &kp T          &kp Y       &kp U       &kp I       &kp O       &kp P
+        &hml LCTRL A &hml LALT S &hml LGUI D &hml LSHFT F &kp G         &kp H       &hmr RSHFT J &hmr LGUI K &hmr RALT L &hmr RCTRL SEMI
+        &kp Z       &kp X       &kp C       &kp V       &kp B          &kp N       &kp M       &comma_morph &dot_morph &qexcl
+                                       &smart_shift &lt_spc NAV 0    &rh0_smart  &rh1_smart
+      >;
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /* NAV LAYER (vim arrows, sticky mods, tmux, clipboard)                  */
+    /* ---------------------------------------------------------------------- */
+    nav {
+      bindings = <
+        &kp LA(F4)   ___         &kp LS(TAB)  &swapper    &kp C_PREV    &kp C_VOL_UP   &mt_bspc 0   &mt_up 0 UP  &mt_del 0 DEL ___
+        &sk LGUI     &sk LALT    &sk LSHFT    &sk LCTRL   &kp VOL_DOWN   &kp PG_DN   &mt_home 0 LEFT &mt_down 0 DOWN &mt_end 0 RIGHT &kp RET
+        &ok_undo     &ok_redo    ___          ___         ___             &kp PIN_APP   &kp C_NEXT    &kp PIN_WIN  &kp DSK_PREV  &kp DSK_NEXT
+                                       ___          &kp C_MUTE         ___        &kp K_CANCEL
+      >;
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /* NUM LAYER (numbers + window mods; accessed via num_sticky combo)      */
+    /* ---------------------------------------------------------------------- */
+    num {
+      bindings = <
+        ___         &kp N7      &kp N8      &kp N9      ___          ___         &kp C_PP    &kp DSK_MGR ___        ___        ___
+        &hml LGUI N0 &hml LALT N4 &hml LSHFT N5 &hml LCTRL N6 ___       ___         ___        ___        ___        ___
+        ___         &kp N1      &kp N2      &kp N3      ___          ___         ___        ___        ___        ___
+                                       ___          ___             ___        ___
+      >;
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /* SYM LAYER (symbols + F-keys merged in; FN no longer separate)          */
+    /* ---------------------------------------------------------------------- */
+    sym {
+      bindings = <
+        &kp LBRC     &kp AMPS    &kp STAR    &kp LPAR    &kp RBRC       &kp N6     &kp N7     &kp N8     &kp N9     &kp N0
+        &kp SQT      &kp DLLR    &kp PRCNT   &kp CARET   &kp PLUS       &kp DQT    &kp QMARK  &kp SQT    &kp MINUS  &kp ASTRK
+        &kp F10      &kp F1      &kp F2      &kp F3      &kp F11        &kp PIPE   &kp UNDER  &kp F4     &kp F5     &kp PLUS
+                                       ___          &kp LPAR          &kp RBRC   &kp FSLH
+      >;
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /* MOUSE LAYER                                                           */
+    /* ---------------------------------------------------------------------- */
+    mouse {
+      bindings = <
+        ___          ___         ___         ___         ___            ___        &kp PG_UP  &mmv MOVE_UP   &kp PG_DN  ___
+        ___          ___         ___         ___         ___            &msc SCRL_LEFT &mmv MOVE_LEFT &mmv MOVE_DOWN &mmv MOVE_RIGHT &msc SCRL_RIGHT
+        ___          ___         ___         ___         ___            ___        &mkp LCLK  &mkp MCLK     &mkp RCLK  ___
+                                       ___          ___              &msc SCRL_UP &msc SCRL_DOWN
+      >;
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /* SYS LAYER (BT, OS, bootloader — accessed via sys_layer 3-thumb combo)  */
+    /* ---------------------------------------------------------------------- */
+    sys {
+      bindings = <
+        &os_sel OS_WIN &os_sel OS_MAC &os_sel OS_LIN ___        ___        &out OUT_USB &out OUT_BLE ___        ___        ___
+        &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_CLR  &bootloader ___        ___        ___        ___
+        &studio_unlock ___       ___       ___       &sys_reset    &sys_reset ___        ___        ___        ___
+                                  ___        ___              ___        ___
+      >;
+    };
+  };
+};

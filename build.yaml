@@ -1,0 +1,23 @@
+---
+include:
+  # Settings reset - flash before the target firmware
+  - board: nice_nano//zmk
+    shield: settings_reset
+    artifact-name: settings_reset
+  # Dongle with Prospector screen (ZMK Studio enabled)
+  - board: xiao_ble//zmk
+    shield: zyraft_dongle prospector_adapter
+    artifact-name: zyraft_dongle
+    snippet: studio-rpc-usb-uart
+  # Fallback dongle without ZMK Studio
+  - board: xiao_ble//zmk
+    shield: zyraft_dongle prospector_adapter
+    artifact-name: zyraft_dongle_nostudio
+  # Left peripheral
+  - board: nice_nano//zmk
+    shield: zyraft_left
+    artifact-name: zyraft_left
+  # Right peripheral
+  - board: nice_nano//zmk
+    shield: zyraft_right
+    artifact-name: zyraft_right

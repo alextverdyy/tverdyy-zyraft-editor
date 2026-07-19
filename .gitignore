@@ -1,0 +1,33 @@
+# ZMK build artifacts
+build/
+.cache/
+*.uf2
+*.bin
+*.hex
+*.elf
+*.map
+*.lst
+
+# Python / build cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# West workspace (if initialized locally)
+modules/
+bootloader/
+zephyr/
+tools/
+
+# Local secrets
+*.local
+.env

@@ -1,0 +1,48 @@
+manifest:
+  remotes:
+    - name: zmkfirmware
+      url-base: https://github.com/zmkfirmware
+    - name: urob
+      url-base: https://github.com/urob
+    - name: carrefinho
+      url-base: https://github.com/carrefinho
+    - name: dhruvinsh
+      url-base: https://github.com/dhruvinsh
+    - name: mentaldesk
+      url-base: https://github.com/mentaldesk
+    - name: caksoylar
+      url-base: https://github.com/caksoylar
+  projects:
+    - name: zmk
+      remote: zmkfirmware
+      revision: main
+      import: app/west.yml
+    - name: zmk-helpers
+      remote: urob
+      revision: main
+    - name: zmk-unicode
+      remote: urob
+      revision: main
+    - name: zmk-auto-layer
+      remote: urob
+      revision: main
+    - name: zmk-adaptive-key
+      remote: urob
+      revision: main
+    - name: zmk-leader-key
+      remote: urob
+      revision: main
+    - name: zmk-tri-state
+      remote: dhruvinsh
+      revision: main
+    - name: oskey
+      remote: mentaldesk
+      revision: main
+    - name: zmk-smart-toggle
+      remote: caksoylar
+      revision: main
+    - name: prospector-zmk-module
+      remote: carrefinho
+      revision: feat/new-status-screens
+  self:
+    path: config

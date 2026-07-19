@@ -1,0 +1,33 @@
+# Zyra FT dongle config
+if SHIELD_ZYRAFT_DONGLE
+config ZMK_KEYBOARD_NAME
+    default "Zyra FT DGL"
+
+config ZMK_SPLIT_ROLE_CENTRAL
+    default y
+endif
+
+if SHIELD_ZYRAFT_LEFT || SHIELD_ZYRAFT_RIGHT
+config ZMK_SPLIT_ROLE_CENTRAL
+    default n
+endif
+
+if SHIELD_ZYRAFT_LEFT
+config ZMK_KEYBOARD_NAME
+    default "Zyra FT L"
+endif
+
+if SHIELD_ZYRAFT_RIGHT
+config ZMK_KEYBOARD_NAME
+    default "Zyra FT R"
+endif
+
+# Split enabled for all three shields
+if SHIELD_ZYRAFT_LEFT || SHIELD_ZYRAFT_RIGHT || SHIELD_ZYRAFT_DONGLE
+config ZMK_SPLIT
+    default y
+
+config ZMK_BLE
+    default y
+
+endif
